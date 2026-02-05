@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 package-lock.json
+pnpm-lock.yaml
 
 # Environment variables
 .env
@@ -24,6 +25,8 @@ pids/
 # Sandbox directory (optional - remove if you want to track sandbox files)
 sandbox/*
 !sandbox/.gitkeep
+sandbox-lite/*
+!sandbox-lite/.gitkeep
 
 # OS files
 .DS_Store

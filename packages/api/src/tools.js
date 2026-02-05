@@ -1,10 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { exec } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 
-const SANDBOX_DIR = path.resolve(process.cwd(), "sandbox");
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(moduleDir, "..", "..", "..");
+const SANDBOX_DIR = path.resolve(repoRoot, "sandbox");
 
 async function ensureSandbox() {
   await fs.mkdir(SANDBOX_DIR, { recursive: true });

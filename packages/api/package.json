@@ -1,0 +1,20 @@
+{
+  "name": "api",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "agent-lite": "workspace:*",
+    "@langchain/core": "latest",
+    "@langchain/openai": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "langchain": "latest",
+    "zod": "latest"
+  }
+}

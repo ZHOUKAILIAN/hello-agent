@@ -1,8 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { getExecutor } from "./agent.js";
+import { runLite } from "./runLiteRoute.js";
 
-dotenv.config();
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(moduleDir, "..", "..", "..");
+dotenv.config({ path: path.resolve(repoRoot, ".env") });
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -31,6 +36,10 @@ app.post("/run", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message || "Unknown error" });
   }
+});
+
+app.post("/run-lite", async (req, res) => {
+  await runLite(req, res);
 });
 
 const port = Number(process.env.PORT) || 3000;

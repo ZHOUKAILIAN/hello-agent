@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-**hello-agent** is a minimal LangChain + ReAct JavaScript API that demonstrates agent basics with tool calling. It provides a sandboxed environment for experimenting with prompt engineering and agent workflows.
+**hello-agent** is a minimal LangChain + ReAct JavaScript API that demonstrates agent basics with tool calling. It also includes a hand-rolled lite agent exposed via `/run-lite`. The project provides sandboxed environments for experimenting with prompt engineering and agent workflows.
 
 ### Key Features
-- HTTP API endpoint (`POST /run`) for ReAct agent execution
-- Sandboxed file operations restricted to `./sandbox` directory
+- HTTP API endpoints (`POST /run`, `POST /run-lite`) for agent execution
+- Sandboxed file operations restricted to `./sandbox` (LangChain) and `./sandbox-lite` (lite agent)
 - Optional intermediate step logging for debugging
-- LangChain integration with OpenAI models
+- LangChain integration with OpenAI models and a direct OpenAI API integration for the lite agent
 
 ### Tech Stack
 - **Runtime**: Node.js >=20
@@ -60,16 +60,18 @@
 
 ```
 hello-agent/
-├── src/
-│   ├── agent.js      # ReAct agent initialization and executor
-│   ├── server.js     # Express API server
-│   └── tools.js      # LangChain tools (file operations, tests)
-├── sandbox/          # Isolated directory for agent file operations
-├── docs/             # Project documentation (see below)
-├── .env              # Environment configuration (gitignored)
-├── .env.example      # Environment template
-├── package.json      # Dependencies and scripts
-└── README.md         # User-facing documentation
+├── packages/
+│   ├── api/
+│   │   └── src/       # Express API server + LangChain agent
+│   └── agent-lite/
+│       └── src/       # Hand-rolled lite agent + tools
+├── sandbox/           # LangChain agent sandbox
+├── sandbox-lite/      # Lite agent sandbox
+├── docs/              # Project documentation (see below)
+├── .env               # Environment configuration (gitignored)
+├── .env.example       # Environment template
+├── package.json       # Workspace scripts
+└── README.md          # User-facing documentation
 ```
 
 ---
@@ -99,19 +101,19 @@ docs/
 
 ### 1. Setup
 ```bash
-npm install
+pnpm install
 cp .env.example .env
-# Edit .env with your OPENAI_API_KEY and OPENAI_MODEL
+# Edit .env with your OPENAI_API_KEY and OPENAI_MODEL (optional: OPENAI_LITE_MODEL, OPENAI_LITE_BASE_URL)
 ```
 
 ### 2. Development
 ```bash
-npm run dev  # Start with hot reload
+pnpm run dev  # Start with hot reload
 ```
 
 ### 3. Testing
 ```bash
-# Test the API
+# Test the LangChain API
 curl -X POST http://localhost:3000/run \
   -H "content-type: application/json" \
   -d '{"input":"List files in sandbox, then write a hello.txt"}'
@@ -120,6 +122,11 @@ curl -X POST http://localhost:3000/run \
 curl -X POST http://localhost:3000/run \
   -H "content-type: application/json" \
   -d '{"input":"List files","includeSteps":true}'
+
+# Test the lite agent
+curl -X POST http://localhost:3000/run-lite \
+  -H "content-type: application/json" \
+  -d '{"input":"List files in sandbox-lite, then write hello.txt"}'
 ```
 
 ---
@@ -167,27 +174,27 @@ The agent executor is cached to avoid:
 ### Adding a New Tool
 1. Document the tool's purpose in `docs/requirements/`
 2. Design the tool interface in `docs/design/`
-3. Implement in `src/tools.js` following existing patterns
+3. Implement in `packages/api/src/tools.js` following existing patterns
 4. Add to `buildTools()` return array
 5. Test thoroughly with sandbox restrictions
 
 ### Modifying the Agent
 1. Document why the change is needed
 2. Design the modification approach
-3. Update `src/agent.js`
+3. Update `packages/api/src/agent.js`
 4. Test with various inputs to ensure stability
 
 ### Changing API Behavior
 1. Document the API change requirement
 2. Design backward compatibility strategy (if needed)
-3. Update `src/server.js`
+3. Update `packages/api/src/server.js`
 4. Update API documentation in README.md
 
 ---
 
 ## Security Considerations
 
-- **Path Traversal**: `resolveSandboxPath()` prevents escaping sandbox
+- **Path Traversal**: `resolveSandboxPath()` prevents escaping sandboxes
 - **Command Injection**: `run_tests` tool only allows whitelisted commands
 - **Input Validation**: All tool inputs validated with Zod schemas
 - **API Keys**: Never commit `.env` file (in `.gitignore`)
